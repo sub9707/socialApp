@@ -1,2 +1,14 @@
 @import "tailwindcss";
 @import "./reset.css";
+
+.scrollbar-hide::-webkit-scrollbar{
+    display: none;
+}
+
+.scrollbar-hide{
+    scrollbar-width: none;
+}
+
+.body{
+    font-family: var(--font-do-hyeon), sans-serif !important;
+}
