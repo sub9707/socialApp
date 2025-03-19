@@ -1,6 +1,9 @@
+import prisma from "@/library/client"
+import { auth } from "@clerk/nextjs/server";
 import Image from "next/image"
 
-const AddPost = () => {
+const AddPost = async () => {
+
   return (
     <div className='p-4 bg-white shadow-md rounded-lg flex gap-4 justify-between text-sm'>
       {/* avatar */}
@@ -12,14 +15,15 @@ const AddPost = () => {
       {/* post */}
       <div className='flex-1'>
         {/* text input */}
-        <div className='flex gap-4'>
-          <textarea placeholder="지금 상태를 게시해요..." className="flex-1 bg-slate-100 rounded-lg p-2"></textarea>
+        <form className='flex gap-4'>
+          <textarea name="description" placeholder="지금 상태를 게시해요..." className="flex-1 bg-slate-100 rounded-lg p-2"></textarea>
           <Image src={'/emoji.png'}
             alt='emoji'
             className="w-5 h-5 cursor-pointer self-end"
             width={20}
             height={20} />
-        </div>
+          <button>게시</button>
+        </form>
         {/* post options */}
         <div className='flex items-center gap-4 mt-4 text-gray-400 flex-wrap'>
           <div className='flex items-center gap-2 cursor-pointer'>
