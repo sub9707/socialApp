@@ -1,6 +1,6 @@
 import AddPost from "./components/AddPost";
-import Feed from "./components/Feed";
-import LeftMenu from "./components/LeftMenu";
+import Feed from "./components/Feed/Feed";
+import LeftMenu from "./components/LeftMenu/LeftMenu";
 import RightMenu from "./components/RightMenu/RightMenu";
 import Stories from "./components/Stories";
 
