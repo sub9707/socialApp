@@ -1,7 +1,26 @@
+import prisma from "@/library/client";
+import { auth } from "@clerk/nextjs/server";
 import Image from "next/image"
 import Link from "next/link"
+import FriendRequestList from "./FriendRequestList";
 
-const FriendsRequests = () => {
+const FriendsRequests = async() => {
+
+    const {userId} = await auth();
+
+    if(!userId) return null;
+
+    const requests = await prisma.followRequest.findMany({
+        where:{
+            receiverId:userId
+        },
+        include:{
+            sender:true,
+        }
+    });
+
+    if(requests.length === 0 ) return null;
+
     return (
         <div className='p-4 bg-white rounded-lg shadow-md text-sm flex flex-col gap-4'>
             {/* TOP */}
@@ -10,36 +29,7 @@ const FriendsRequests = () => {
                 <Link href="/" className="text-blue-500 text-sm">전체보기</Link>
             </div>
             {/* USER */}
-            <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-4'>
-                    <Image src="https://images.pexels.com/photos/31120801/pexels-photo-31120801.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load" alt="avatar" width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
-                    <span className="font-semibold">Addie Townsend</span>
-                </div>
-                <div className='flex gap-3 justify-end'>
-                    <Image src="/accept.png" alt="accept" width={20} height={20} className="w-5 h-5 cursor-pointer" />
-                    <Image src="/decline.png" alt="reject" width={20} height={20} className="w-5 h-5 cursor-pointer grayscale" />
-                </div>
-            </div>
-            <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-4'>
-                    <Image src="https://images.pexels.com/photos/31120801/pexels-photo-31120801.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load" alt="avatar" width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
-                    <span className="font-semibold">Addie Townsend</span>
-                </div>
-                <div className='flex gap-3 justify-end'>
-                    <Image src="/accept.png" alt="accept" width={20} height={20} className="w-5 h-5 cursor-pointer" />
-                    <Image src="/decline.png" alt="reject" width={20} height={20} className="w-5 h-5 cursor-pointer grayscale" />
-                </div>
-            </div>
-            <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-4'>
-                    <Image src="https://images.pexels.com/photos/31120801/pexels-photo-31120801.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load" alt="avatar" width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
-                    <span className="font-semibold">Addie Townsend</span>
-                </div>
-                <div className='flex gap-3 justify-end'>
-                    <Image src="/accept.png" alt="accept" width={20} height={20} className="w-5 h-5 cursor-pointer" />
-                    <Image src="/decline.png" alt="reject" width={20} height={20} className="w-5 h-5 cursor-pointer grayscale" />
-                </div>
-            </div>
+            <FriendRequestList requests={requests}/>
         </div>
     )
 }

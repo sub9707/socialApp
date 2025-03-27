@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import UserInfoCardInteraction from "./UserInfoCardInteraction";
 import { notFound } from "next/navigation";
+import UpdateUser from "./UpdateUser";
 
 const UserInfoCard = async ({ user }: { user: User }) => {
     let isUserBlocked = false;
@@ -38,7 +39,7 @@ const UserInfoCard = async ({ user }: { user: User }) => {
         })
 
         followReqRes ? (isFollowingSent = true) : (isFollowingSent = false);
-    }else{
+    } else {
         return notFound();
     }
     return (
@@ -46,7 +47,10 @@ const UserInfoCard = async ({ user }: { user: User }) => {
             {/* TOP */}
             <div className='flex justify-between items-center font-medium'>
                 <span className="text-gray-500">사용자 정보</span>
-                <Link href="/" className="text-blue-500 text-sm">전체보기</Link>
+                {
+                    currentUserId === user.id ? (<UpdateUser/>):( <Link href="/" className="text-blue-500 text-sm">전체보기</Link>)
+                }
+
             </div>
             {/* BOTTOM */}
             <div className='flex items-center gap-2 text-gray-500'>
@@ -90,7 +94,10 @@ const UserInfoCard = async ({ user }: { user: User }) => {
                     <span>{new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit' }).format(new Date(user.createdAt))} 가입</span>
                 </div>
             </div>
-            <UserInfoCardInteraction userId={user.id} currentUserId={currentUserId} isUserBlocked={isUserBlocked} isFollowing={isFollowing} isFollowingSent={isFollowingSent}/>
+            {
+                (currentUserId && currentUserId !== user.id) &&
+                <UserInfoCardInteraction userId={user.id} isUserBlocked={isUserBlocked} isFollowing={isFollowing} isFollowingSent={isFollowingSent} />
+            }
         </div>
     )
 }

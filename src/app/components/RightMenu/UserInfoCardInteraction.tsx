@@ -4,13 +4,11 @@ import { switchBlock, switchFollow } from "@/library/actions";
 import { useOptimistic, useState } from "react";
 
 const UserInfoCardInteraction = ({
-  currentUserId,
   userId,
   isUserBlocked,
   isFollowing,
   isFollowingSent,
 }: {
-  currentUserId: string;
   userId: string;
   isUserBlocked: boolean;
   isFollowing: boolean;
@@ -26,8 +24,8 @@ const UserInfoCardInteraction = ({
     if (action === "follow") {
       return {
         ...state,
-        following: !state.following,
-        followingRequestSent: !state.following && !state.followingRequestSent,
+        followingRequestSent: !state.followingRequestSent,
+        following: state.followingRequestSent ? false : state.following, // 팔로우 요청 취소 시 팔로우 상태 초기화
       };
     } else {
       return {
@@ -57,8 +55,8 @@ const UserInfoCardInteraction = ({
       await switchFollow(userId);
       setUserState(prev => ({
         ...prev,
-        following: !prev.following,
-        followingRequestSent: !prev.following && !prev.followingRequestSent,
+        followingRequestSent: !prev.followingRequestSent,
+        following: prev.followingRequestSent ? false : prev.following, // 팔로우 요청 취소 시 팔로우 상태 초기화
       }));
     } catch (error) {
       console.error(error);
@@ -70,10 +68,10 @@ const UserInfoCardInteraction = ({
     <>
       <form action={follow}>
         <button className="w-full bg-blue-500 text-white text-sm rounded-md p-2 cursor-pointer">
-          {optimisticState.following
-            ? "팔로우됨"
-            : optimisticState.followingRequestSent
+          {optimisticState.followingRequestSent
             ? "팔로우 요청됨"
+            : optimisticState.following
+            ? "팔로우됨"
             : "팔로우"}
         </button>
       </form>

@@ -1,6 +1,6 @@
 "use server"
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import prisma from "./client";
 
 export const switchFollow = async (userId: string) => {
@@ -80,5 +80,67 @@ export const switchBlock = async(userId:string) =>{
     } catch (error) {
         console.error(error);
         throw new Error("Something went wrong while switching Block action.");
+    }
+}
+
+export const acceptFollowRequest = async(userId:string)=>{
+    const {userId:currentUserId} = await auth();
+
+    if(!currentUserId){
+        throw new Error("User is not Authenticated.");
+    }
+    try {
+        const exisitingFollowRequest = await prisma.followRequest.findFirst({
+            where:{
+                senderId:userId,
+                receiverId:currentUserId
+            }
+        });
+    
+        if(exisitingFollowRequest){
+            await prisma.followRequest.delete({
+                where:{
+                    id:exisitingFollowRequest.id
+                }
+            });
+    
+            await prisma.follower.create({
+                data:{
+                    followerId:userId,
+                    followingId:currentUserId,
+                }
+            })
+        }
+    } catch (error) {
+        console.error(error);
+        throw new Error('Something went wrong while Following action.');
+    }
+}
+
+export const declineFollowRequest = async(userId:string)=>{
+    const {userId:currentUserId} = await auth();
+
+    if(!currentUserId){
+        throw new Error("User is not Authenticated.");
+    }
+    try {
+        const exisitingFollowRequest = await prisma.followRequest.findFirst({
+            where:{
+                senderId:userId,
+                receiverId:currentUserId
+            }
+        });
+    
+        if(exisitingFollowRequest){
+            await prisma.followRequest.delete({
+                where:{
+                    id:exisitingFollowRequest.id
+                }
+            });
+
+        }
+    } catch (error) {
+        console.error(error);
+        throw new Error('Something went wrong while Following action.');
     }
 }

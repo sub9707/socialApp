@@ -63,11 +63,11 @@ const Profile = async({params}:{params:{username:string}}) => {
               </div>
               <div className='flex flex-col items-center'>
                 <span className="font-semibold">{user._count.followers}</span>
-                <span className="text-sm">팔로워</span>
+                <span className="text-sm">팔로잉</span>
               </div>
               <div className='flex flex-col items-center'>
                 <span className="font-semibold">{user._count.followings}</span>
-                <span className="text-sm">팔로잉</span>
+                <span className="text-sm">팔로워</span>
               </div>
             </div>
           </div>
