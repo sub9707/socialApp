@@ -1,14 +1,15 @@
 @import "tailwindcss";
 @import "./reset.css";
 
-.scrollbar-hide::-webkit-scrollbar{
-    display: none;
+html, body {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
 }
 
-.scrollbar-hide{
-    scrollbar-width: none;
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+    display: none;             /* Chrome, Safari, Opera */
 }
 
-.body{
+body {
     font-family: var(--font-do-hyeon), sans-serif !important;
 }
