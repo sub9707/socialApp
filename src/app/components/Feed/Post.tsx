@@ -1,27 +1,30 @@
 import Image from "next/image"
 import Comments from "./Comments"
+import { Post as PostType, User } from "@prisma/client"
 
-const Post = () => {
+type FeedPostType = PostType & { user: User } & { likes: [{ userId: string }] } & { _count: { comments: number } }
+
+const Post = ({ post }: { post: FeedPostType }) => {
     return (
         <div className='flex flex-col gap-4'>
             {/* USER */}
             <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-4'>
-                    <Image src="https://images.pexels.com/photos/30894155/pexels-photo-30894155.png?auto=compress&cs=tinysrgb&w=600&lazy=load" alt="avatar" className="w-10 h-10 rounded-full" width={40} height={40} />
-                    <span className="font-medium">James Collins</span>
+                    <Image src={post.user.avatar || "/noAvatar.png"} alt="avatar" className="w-10 h-10 rounded-full" width={40} height={40} />
+                    <span className="font-medium">{(post.user.name && post.user.surname) ? post.user.name + " " + post.user.surname : post.user.username}</span>
                 </div>
                 <Image src="/dots.png" alt="more" className="w-4 h-4" width={16} height={16} />
             </div>
             {/* DESCRIPTION */}
             <div className='flex flex-col gap-4'>
-                <div className='w-full min-h-96 relative'>
-                    <Image src="https://images.pexels.com/photos/31097391/pexels-photo-31097391.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load" alt="more" className="object-cover rounded-md" fill />
-                </div>
+                {
+                    post.image &&
+                    <div className='w-full min-h-96 relative'>
+                        <Image src={post.image} alt="more" className="object-cover rounded-md" fill />
+                    </div>
+                }
                 <p>
-                    Dolor sint magna est velit consequat voluptate incididunt do exercitation qui fugiat quis culpa Lorem.
-                    Sint ut fugiat sit elit officia culpa.
-                    Laboris mollit voluptate consequat ea consequat anim dolor sit elit eu.
-                    Mollit aliquip voluptate magna tempor deserunt.
+                   {post.desc}
                 </p>
             </div>
             {/* INTERACTION */}
@@ -46,7 +49,7 @@ const Post = () => {
                     </div>
                 </div>
             </div>
-            <Comments/>
+            <Comments />
         </div>
     )
 }
