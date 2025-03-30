@@ -9,7 +9,7 @@ const Feed = async({username}:{username?:string}) => {
   let posts:any;
 
   if(username){
-    posts == await prisma.post.findMany({
+    posts = await prisma.post.findMany({
       where:{
         user:{
           username:username

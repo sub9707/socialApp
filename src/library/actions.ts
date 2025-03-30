@@ -188,3 +188,49 @@ export const updateProfile = async (prevState:{success:boolean, error:boolean}, 
         return {success: false, error:true};
     }
 };
+
+export const switchLike = async(postId: number) => {
+    const {userId} = await auth();
+
+    if(!userId) throw new Error("인증되지 않은 유저 정보입니다.");
+    try {
+        const existingLike = await prisma.like.findFirst({
+            where:{
+                postId,
+                userId
+            }
+        });
+        
+        let result;
+        
+        if(existingLike){
+            await prisma.like.delete({
+                where:{
+                    id: existingLike.id
+                }            
+            });
+            result = false; // 좋아요 취소됨
+        } else {
+            await prisma.like.create({
+                data:{
+                    postId,
+                    userId
+                }
+            });
+            result = true; // 좋아요 추가됨
+        }
+        
+        // 현재 좋아요 수 조회
+        const likeCount = await prisma.like.count({
+            where: {
+                postId
+            }
+        });
+        
+        // 상태와 개수 반환
+        return { isLiked: result, likeCount };
+    } catch (error) {
+        console.error(error);
+        throw new Error("좋아요 활동 중 에러 발생");
+    }
+}
