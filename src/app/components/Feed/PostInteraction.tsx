@@ -19,6 +19,8 @@ const PostInteraction = ({ postId, likes, commentNumber, isUserLiked }: { postId
         }
     });
 
+    const [optimisticCommentCount, setOptimisticCommentCount] = useState(commentNumber);
+
     const likeAction = async() => {
         switchOptimisiticLike("");
         try {

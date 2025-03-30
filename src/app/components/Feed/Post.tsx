@@ -38,7 +38,7 @@ const Post = async ({ post }: { post: FeedPostType }) => {
                 postId={post.id} 
                 likes={post.likes.map((like) => like.userId)} 
                 commentNumber={post._count.comments}
-                isUserLiked={isUserLiked} // 미리 계산된 사용자의 좋아요 상태 전달
+                isUserLiked={isUserLiked}
             />
             <Comments postId={post.id} />
         </div>

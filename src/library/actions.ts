@@ -3,6 +3,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import prisma from "./client";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 
 export const switchFollow = async (userId: string) => {
     const { userId: currentUserId } = await auth();
@@ -50,65 +51,65 @@ export const switchFollow = async (userId: string) => {
     }
 }
 
-export const switchBlock = async(userId:string) =>{
-    const{userId:currentUserId} = await auth();
+export const switchBlock = async (userId: string) => {
+    const { userId: currentUserId } = await auth();
 
-    if(!currentUserId){
+    if (!currentUserId) {
         throw new Error("User is not Authenticated.");
     }
     try {
         const exisitingBlock = await prisma.block.findFirst({
-            where:{
-                blockerId:currentUserId,
+            where: {
+                blockerId: currentUserId,
                 blockedId: userId,
             }
         });
-        if(exisitingBlock){
+        if (exisitingBlock) {
             await prisma.block.delete({
-                where:{
-                    id:exisitingBlock.id
+                where: {
+                    id: exisitingBlock.id
                 }
             })
-        }else{
+        } else {
             await prisma.block.create({
-                data:{
+                data: {
                     blockerId: currentUserId,
                     blockedId: userId,
                 }
             })
         }
-        
+
     } catch (error) {
         console.error(error);
         throw new Error("Something went wrong while switching Block action.");
     }
 }
 
-export const acceptFollowRequest = async(userId:string)=>{
-    const {userId:currentUserId} = await auth();
+export const acceptFollowRequest = async (userId: string) => {
+    const { userId: currentUserId } = await auth();
 
-    if(!currentUserId){
+    if (!currentUserId) {
         throw new Error("User is not Authenticated.");
     }
     try {
         const exisitingFollowRequest = await prisma.followRequest.findFirst({
-            where:{
-                senderId:userId,
-                receiverId:currentUserId
+            where: {
+                senderId: userId,
+                receiverId: currentUserId
             }
         });
-    
-        if(exisitingFollowRequest){
+
+        if (exisitingFollowRequest) {
             await prisma.followRequest.delete({
-                where:{
-                    id:exisitingFollowRequest.id
+                where: {
+                    id: exisitingFollowRequest.id
                 }
             });
-    
+
             await prisma.follower.create({
-                data:{
-                    followerId:userId,
-                    followingId:currentUserId,
+                data: {
+                    followerId: userId,
+                    followingId: currentUserId,
                 }
             })
         }
@@ -118,24 +119,24 @@ export const acceptFollowRequest = async(userId:string)=>{
     }
 }
 
-export const declineFollowRequest = async(userId:string)=>{
-    const {userId:currentUserId} = await auth();
+export const declineFollowRequest = async (userId: string) => {
+    const { userId: currentUserId } = await auth();
 
-    if(!currentUserId){
+    if (!currentUserId) {
         throw new Error("User is not Authenticated.");
     }
     try {
         const exisitingFollowRequest = await prisma.followRequest.findFirst({
-            where:{
-                senderId:userId,
-                receiverId:currentUserId
+            where: {
+                senderId: userId,
+                receiverId: currentUserId
             }
         });
-    
-        if(exisitingFollowRequest){
+
+        if (exisitingFollowRequest) {
             await prisma.followRequest.delete({
-                where:{
-                    id:exisitingFollowRequest.id
+                where: {
+                    id: exisitingFollowRequest.id
                 }
             });
 
@@ -146,13 +147,13 @@ export const declineFollowRequest = async(userId:string)=>{
     }
 }
 
-export const updateProfile = async (prevState:{success:boolean, error:boolean}, payload:{formData: FormData, cover:string}) => {
+export const updateProfile = async (prevState: { success: boolean, error: boolean }, payload: { formData: FormData, cover: string }) => {
 
-    const {formData, cover} = payload;
+    const { formData, cover } = payload;
     const fields = Object.fromEntries(formData);
 
     const filteredFields = Object.fromEntries(
-        Object.entries(fields).filter(([_, value])=> value !=="")
+        Object.entries(fields).filter(([_, value]) => value !== "")
     )
 
     const Profile = z.object({
@@ -166,71 +167,127 @@ export const updateProfile = async (prevState:{success:boolean, error:boolean}, 
         website: z.string().max(60).optional(),
     });
 
-    const validatedFields = Profile.safeParse({cover, ...filteredFields});
+    const validatedFields = Profile.safeParse({ cover, ...filteredFields });
 
     if (!validatedFields.success) {
-        console.log(validatedFields.error.flatten().fieldErrors);
-        return {success: false, error:true};
+        console.error(validatedFields.error.flatten().fieldErrors);
+        return { success: false, error: true };
     }
 
     const { userId } = await auth();
 
-    if (!userId) return {success: false, error:true};
+    if (!userId) return { success: false, error: true };
 
     try {
         await prisma.user.update({
             where: { id: userId },
             data: validatedFields.data,
         });
-        return {success: true, error:false};
+        return { success: true, error: false };
     } catch (error) {
         console.error(error);
-        return {success: false, error:true};
+        return { success: false, error: true };
     }
 };
 
-export const switchLike = async(postId: number) => {
-    const {userId} = await auth();
+export const switchLike = async (postId: number) => {
+    const { userId } = await auth();
 
-    if(!userId) throw new Error("인증되지 않은 유저 정보입니다.");
+    if (!userId) throw new Error("인증되지 않은 유저 정보입니다.");
     try {
         const existingLike = await prisma.like.findFirst({
-            where:{
+            where: {
                 postId,
                 userId
             }
         });
-        
+
         let result;
-        
-        if(existingLike){
+
+        if (existingLike) {
             await prisma.like.delete({
-                where:{
+                where: {
                     id: existingLike.id
-                }            
+                }
             });
             result = false; // 좋아요 취소됨
         } else {
             await prisma.like.create({
-                data:{
+                data: {
                     postId,
                     userId
                 }
             });
             result = true; // 좋아요 추가됨
         }
-        
+
         // 현재 좋아요 수 조회
         const likeCount = await prisma.like.count({
             where: {
                 postId
             }
         });
-        
+
         // 상태와 개수 반환
         return { isLiked: result, likeCount };
     } catch (error) {
         console.error(error);
         throw new Error("좋아요 활동 중 에러 발생");
     }
+}
+
+export const addComment = async (postId: number, desc:string) => {
+    const {userId} = await auth();
+
+    if (!userId) throw new Error("인증되지 않은 유저 정보입니다.");
+
+    try {
+        const createdComment = await prisma.comment.create({
+            data:{
+                desc,
+                userId,
+                postId,
+            },
+            include:{
+                user:true
+            }
+        })
+        return createdComment;
+    } catch (error) {
+        console.error(error);
+        throw new Error("댓글 처리 중 에러 발생");
+    }
+}
+
+export const addPost = async(formData:FormData, img:string)=>{
+    const desc = formData.get("description") as string;
+    const Desc = z.string().min(1).max(255);
+    console.log(desc)
+    
+    const validatedDesc = Desc.safeParse(desc);
+    
+    if(!validatedDesc.success){
+        console.error('error!');
+        return;
+    }
+    
+    const {userId} = await auth();
+
+    if(!userId) throw new Error("인증되지 않은 유저 정보입니다.");
+
+    try {
+        await prisma.post.create({
+            data:{
+                desc:validatedDesc.data!,
+                userId,
+                image:img
+            }
+        });
+
+        revalidatePath("/");
+    } catch (error) {
+        console.error(error);
+    }
+
+    if(!desc) return;
 }
