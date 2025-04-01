@@ -291,3 +291,40 @@ export const addPost = async(formData:FormData, img:string)=>{
 
     if(!desc) return;
 }
+
+export const addStory = async(img:string) =>{
+    
+    const {userId} = await auth();
+
+    if(!userId) throw new Error("인증되지 않은 유저 정보입니다.");
+
+    try {
+
+        const existingStory = await prisma.story.findFirst({
+            where:{
+                userId
+            }
+        });
+        if(existingStory){
+            await prisma.story.delete({
+                where:{
+                    id:existingStory.id
+                }
+            })
+        }
+        const createdStory = await prisma.story.create({
+            data:{
+                userId,
+                image:img,
+                expiresAt: new Date(Date.now() + 25 * 60 * 60 * 1000)
+            },
+            include:{
+                user:true
+            }
+        });
+
+        return createdStory;
+    } catch (error) {
+        console.error(error);
+    }
+}
